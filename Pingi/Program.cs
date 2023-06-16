@@ -1,7 +1,9 @@
-﻿using System;
+﻿using CommandLine;
+using System;
 using System.Data;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 
@@ -18,34 +20,31 @@ namespace Pingi
         public static long timeSumatory = 0;
         public static string host { get; set; } = "";
         public static string file { get; set; } = "";
-        public static int port { get; set; } = 0;
+        public static int port { get; set; } = -1;
 
         static void Main(string[] args)
         {
             Console.CancelKeyPress += Console_CancelKeyPress;
-            Console.WriteLine("Por Aimarmun...");
+            PrintLineMsg("Por Aimarmun 2023");
+
+            var result = Parser.Default.ParseArguments<CLIOptions>(args)
+                .WithParsed<CLIOptions>(option =>
+                {
+                    host = option.Host;
+                    port = option.Port;
+                    file = option.OutputFile;
+                });
+
+            if (result.Errors.Count() > 0) return;
+
             while (running)
             {
                 try
                 {
-                    (host, file) = (args[0], args[1]);
-                    if (args.Length > 2)
+                    
+                    if (port > 1)
                     {
-                        int p;
-                        if (int.TryParse(args[2], out p))
-                        {
-                            port = p;
-                            PingToPort();
-                        }
-                        else
-                        {
-                            Console.WriteLine($"ERROR: El argumento 3 tiene que ser un puerto válido\n" +
-                            $"Escribe como primer argumento la IP o nombre de Host y como segundo argumento el archivo Log destino. Opcional argumento 3 puerto. By Aimarmun 03/09/2021");
-                            Console.ReadKey();
-                            Environment.Exit(1);
-                            break;
-                        }
-
+                        PingToPort();
                     }
                     else
                     {
@@ -56,8 +55,9 @@ namespace Pingi
                 {
                     if (start)
                     {
-                        Console.WriteLine($"ERROR: {ex.Message}\n" +
-                            $"Escribe como primer argumento la IP o nombre de Host y como segundo argumento el archivo Log destino. Opcional argumento 3 puerto. By Aimarmun 03/09/2021");
+                        PrintLineMsg($"ERROR: {ex.Message}\n" +
+                            $"Escribe como primer argumento la IP o nombre de Host y como segundo argumento el archivo Log destino. " +
+                            $"Opcional argumento 3 puerto. By Aimarmun 03/09/2021", false);
                         Console.ReadKey();
                         Environment.Exit(1);
                         break;
@@ -67,7 +67,7 @@ namespace Pingi
                         if (!lastError.Equals(ex.Message))
                         {
                             lastError = ex.Message;
-                            File.AppendAllText(file, $"[{DateTime.Now}]\t Estado: ERROR!  Mensaje: {ex.Message}{Environment.NewLine}");
+                            PrintLineMsg($"[{DateTime.Now}]\t Estado: ERROR!  Mensaje: {ex.Message}{Environment.NewLine}");
 
                         }
                     }
@@ -84,11 +84,21 @@ namespace Pingi
                 $"\tAciertos: {successCount}{Environment.NewLine}" +
                 $"\tFallos:   {failCount}{Environment.NewLine}" +
                 $"\t{statistics} {Environment.NewLine}";
-            File.AppendAllText(file, temp);
-            Console.WriteLine(temp);
+            PrintLineMsg (temp);
             Console.Beep();
             System.Threading.Thread.Sleep(3000);
 
+        }
+
+        private static void PrintLineMsg(string msg, bool writeToFile = true)
+        {
+            Console.WriteLine(msg);
+            if (string.IsNullOrEmpty(file) || !writeToFile) return;
+            try
+            {
+                File.AppendAllText(file, msg + Environment.NewLine);
+            }
+            catch { }
         }
 
         private static void Ping()
@@ -102,14 +112,14 @@ namespace Pingi
                     if (start)
                     {
                         start = false;
-                        File.AppendAllText(file, $"[{DateTime.Now}]\t Estado: {reply.Status}  Tiempo: {reply.RoundtripTime}ms Dirección: {reply.Address}{Environment.NewLine}");
+                        PrintLineMsg( $"[{DateTime.Now}]\t Estado: {reply.Status}  Tiempo: {reply.RoundtripTime}ms Dirección: {reply.Address}");
                         lastStatus = reply.Status;
                     }
                     else
                     {
                         if (!reply.Status.Equals(lastStatus))
                         {
-                            File.AppendAllText(file, $"[{DateTime.Now}]\t Estado: {reply.Status}  Tiempo: {reply.RoundtripTime}ms. Dirección: {reply.Address}{Environment.NewLine}");
+                            PrintLineMsg($"[{DateTime.Now}]\t Estado: {reply.Status}  Tiempo: {reply.RoundtripTime}ms. Dirección: {reply.Address}");
                             lastStatus = reply.Status;
                         }
                     }
@@ -131,23 +141,23 @@ namespace Pingi
         {
 
             stopwatch.Restart();
-            bool portOpen = isPortOpen();
+            bool portOpen = IsPortOpen();
             stopwatch.Stop();
 
             int millis = (int)Math.Round(stopwatch.Elapsed.TotalMilliseconds);
 
-            if (isPortOpen())
+            if (IsPortOpen())
             {
                 Console.WriteLine("Estado:  el puerto responde. Tiempo: " + millis + "ms. Dirección: " + host);
                 if (start)
                 {
                     start = false;
-                    File.AppendAllText(file, $"[{DateTime.Now}]\t Estado: el puerto responde Tiempo: {millis}ms Dirección: {host}{Environment.NewLine}");
+                    PrintLineMsg($"[{DateTime.Now}]\t Estado: el puerto responde Tiempo: {millis}ms Dirección: {host}");
                     lastStatus = IPStatus.Success;
                 }
                 else if(lastStatus != IPStatus.Success)
                 {
-                    File.AppendAllText(file, $"[{DateTime.Now}]\t Estado: el puerto responde Tiempo: {millis}ms Dirección: {host}{Environment.NewLine}");
+                    PrintLineMsg($"[{DateTime.Now}]\t Estado: el puerto responde Tiempo: {millis}ms Dirección: {host}");
                     lastStatus = IPStatus.Success;
                 }
                 successCount++;
@@ -158,7 +168,7 @@ namespace Pingi
                 Console.WriteLine("Estdo: el puerto "+ port +" NO responde. Tiempo de corte: " + millis + "ms. Dirección: " + host);
                 if (lastStatus != IPStatus.TimedOut)
                 {
-                    File.AppendAllText(file, $"[{DateTime.Now}]\t Estado: el puerto {port} NO responde. Tiempo de corte: {millis}ms. Dirección: {host}{Environment.NewLine}");
+                    PrintLineMsg($"[{DateTime.Now}]\t Estado: el puerto {port} NO responde. Tiempo de corte: {millis}ms. Dirección: {host}");
                     lastStatus =IPStatus.TimedOut;
                 }
                 failCount++;
@@ -168,7 +178,7 @@ namespace Pingi
             System.Threading.Thread.Sleep(1000);
         }
 
-        private static bool isPortOpen()
+        private static bool IsPortOpen()
         {
             bool isPortOpen = false;
             using (TcpClient tcpClient = new TcpClient())
@@ -185,7 +195,7 @@ namespace Pingi
         private static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
         {
             e.Cancel = true;
-            Console.WriteLine("Parando...");
+            PrintLineMsg("Parando...", false);
             running = false;
         }
     }
