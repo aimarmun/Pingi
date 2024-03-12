@@ -1,9 +1,4 @@
 ﻿using CommandLine;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Pingi
 {
@@ -17,5 +12,8 @@ namespace Pingi
 
         [Option('p', "port", Required = false, HelpText = "Indica un puerto TCP específico, Pingi intentará comprobar si el puerto se encuentra abierto y lo considerará como \"responde\"")]
         public int Port { get; set; } = -1;
+
+        [Option('n', "nodelay", Required = false, HelpText = "Indica si se tiene que enviar inmediatamente otro Ping despues de terminar otro.")]
+        public bool NoDelay { get; set; } = false;
     }
 }

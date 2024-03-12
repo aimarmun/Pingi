@@ -18,9 +18,11 @@ namespace Pingi
         public static int successCount = 0;
         public static int failCount = 0;
         public static long timeSumatory = 0;
-        public static string host { get; set; } = "";
-        public static string file { get; set; } = "";
-        public static int port { get; set; } = -1;
+        public static string Host { get; set; } = "";
+        public static string File { get; set; } = "";
+        public static int Port { get; set; } = -1;
+
+        public static bool NoDelay { get; set; } = false;
 
         static void Main(string[] args)
         {
@@ -30,9 +32,10 @@ namespace Pingi
             var result = Parser.Default.ParseArguments<CLIOptions>(args)
                 .WithParsed<CLIOptions>(option =>
                 {
-                    host = option.Host;
-                    port = option.Port;
-                    file = option.OutputFile;
+                    Host = option.Host;
+                    Port = option.Port;
+                    File = option.OutputFile;
+                    NoDelay = option.NoDelay;
                 });
 
             if (result.Errors.Count() > 0) return;
@@ -42,7 +45,7 @@ namespace Pingi
                 try
                 {
                     
-                    if (port > 1)
+                    if (Port > 1)
                     {
                         PingToPort();
                     }
@@ -93,10 +96,10 @@ namespace Pingi
         private static void PrintLineMsg(string msg, bool writeToFile = true)
         {
             Console.WriteLine(msg);
-            if (string.IsNullOrEmpty(file) || !writeToFile) return;
+            if (string.IsNullOrEmpty(File) || !writeToFile) return;
             try
             {
-                File.AppendAllText(file, msg + Environment.NewLine);
+                System.IO.File.AppendAllText(File, msg + Environment.NewLine);
             }
             catch { }
         }
@@ -105,7 +108,7 @@ namespace Pingi
         {
             
                 Ping myPing = new Ping();
-                PingReply reply = myPing.Send(host, 3000);
+                PingReply reply = myPing.Send(Host, 3000);
                 if (reply != null)
                 {
                     Console.WriteLine("Estado:  " + reply.Status + " Tiempo: " + reply.RoundtripTime.ToString() + "ms. Dirección: " + reply.Address);
@@ -131,8 +134,9 @@ namespace Pingi
                     else
                         failCount++;
                 }
-            
-            System.Threading.Thread.Sleep(1000);
+
+            if(!NoDelay)
+                System.Threading.Thread.Sleep(TimeSpan.FromSeconds(1));
         }
 
         private static Stopwatch stopwatch = new Stopwatch();
@@ -148,16 +152,16 @@ namespace Pingi
 
             if (IsPortOpen())
             {
-                Console.WriteLine("Estado:  el puerto responde. Tiempo: " + millis + "ms. Dirección: " + host);
+                Console.WriteLine("Estado:  el puerto responde. Tiempo: " + millis + "ms. Dirección: " + Host);
                 if (start)
                 {
                     start = false;
-                    PrintLineMsg($"[{DateTime.Now}]\t Estado: el puerto responde Tiempo: {millis}ms Dirección: {host}");
+                    PrintLineMsg($"[{DateTime.Now}]\t Estado: el puerto responde Tiempo: {millis}ms Dirección: {Host}");
                     lastStatus = IPStatus.Success;
                 }
                 else if(lastStatus != IPStatus.Success)
                 {
-                    PrintLineMsg($"[{DateTime.Now}]\t Estado: el puerto responde Tiempo: {millis}ms Dirección: {host}");
+                    PrintLineMsg($"[{DateTime.Now}]\t Estado: el puerto responde Tiempo: {millis}ms Dirección: {Host}");
                     lastStatus = IPStatus.Success;
                 }
                 successCount++;
@@ -165,17 +169,17 @@ namespace Pingi
             }
             else
             {
-                Console.WriteLine("Estdo: el puerto "+ port +" NO responde. Tiempo de corte: " + millis + "ms. Dirección: " + host);
+                Console.WriteLine("Estdo: el puerto "+ Port +" NO responde. Tiempo de corte: " + millis + "ms. Dirección: " + Host);
                 if (lastStatus != IPStatus.TimedOut)
                 {
-                    PrintLineMsg($"[{DateTime.Now}]\t Estado: el puerto {port} NO responde. Tiempo de corte: {millis}ms. Dirección: {host}");
+                    PrintLineMsg($"[{DateTime.Now}]\t Estado: el puerto {Port} NO responde. Tiempo de corte: {millis}ms. Dirección: {Host}");
                     lastStatus =IPStatus.TimedOut;
                 }
                 failCount++;
             }
                 
-            
-            System.Threading.Thread.Sleep(1000);
+            if(!NoDelay)
+                System.Threading.Thread.Sleep(TimeSpan.FromSeconds(1));
         }
 
         private static bool IsPortOpen()
@@ -185,7 +189,7 @@ namespace Pingi
             {
                 try
                 {                    
-                    isPortOpen = tcpClient.ConnectAsync(host, port).Wait(3000);
+                    isPortOpen = tcpClient.ConnectAsync(Host, Port).Wait(3000);
                 }
                 catch {}
             }
