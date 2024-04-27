@@ -9,10 +9,10 @@ Puede escribir los resultados en un archivo de texto
 
 ## Argumentos admitidos
 
-``-h`` o ``-host`` ``<IP_destino>`` IP o nombre de host
-``-o`` o ``-outputfile`` ``<path_fichero.txt>`` indica que se quieren escribir los resultados en un archivo de texto.
-``-p`` o ``-port`` ``<port_to_ping>`` puerto al que queremos hacer Ping. Si se indica se comprobará si el puerto está abierto, si no se indica, se realizará un Ping ICMP.
-``-n`` o ``-nodelay`` Indica si se tiene que enviar inmediatamente otro Ping despues de terminar otro.
+	- ``-h`` o ``--host`` ``<IP_destino>`` IP o nombre de host.
+ 	- ``-o`` o ``--outputfile`` ``<path_fichero.txt>`` indica que se quieren escribir los resultados en un archivo de texto.
+	- ``-p`` o ``--port`` ``<port_to_ping>`` puerto al que queremos hacer Ping. Si se indica se comprobará si el puerto está abierto, si no se indica, se realizará un Ping ICMP.
+	- ``-n`` o ``--nodelay`` Indica si se tiene que enviar inmediatamente otro Ping despues de terminar otro.
 
 > NOTA: Cuando se escriben los resultados en un archivo de texto, solo se escriben los cambios en la respuesta, es decir, si falla 200 veces solo se escribe una vez a que hora ha fallado, si luego cambia el estado a _"responde"_ entonces se vuelve a escribir un registro con la hora en la que respondió. Al finalizar Pingi siempre se escribe un resumen con las estadísticas de respuesta.
 
