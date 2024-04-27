@@ -169,7 +169,7 @@ namespace Pingi
             }
             else
             {
-                Console.WriteLine("Estdo: el puerto "+ Port +" NO responde. Tiempo de corte: " + millis + "ms. Dirección: " + Host);
+                Console.WriteLine("Estado: el puerto "+ Port +" NO responde. Tiempo de corte: " + millis + "ms. Dirección: " + Host);
                 if (lastStatus != IPStatus.TimedOut)
                 {
                     PrintLineMsg($"[{DateTime.Now}]\t Estado: el puerto {Port} NO responde. Tiempo de corte: {millis}ms. Dirección: {Host}");
