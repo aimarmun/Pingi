@@ -20,11 +20,11 @@ Puede escribir los resultados en un archivo de texto
     ```pingi.exe -h 192.168.1.1 -o results.txt -p 80```
 
   - Ejemplo de archivo de salida:
-    ```console
-[4/27/2024 12:43:31PM]	 Estado: Success  Tiempo: 113ms Dirección: 192.168.1.64
-[4/27/2024 12:43:42PM]	 Estado: TimedOut  Tiempo: 3000ms. Dirección: 192.168.1.64
-[4/27/2024 12:44:00PM]	 Estado: Success  Tiempo: 239ms. Dirección: 192.168.1.64
-[4/27/2024 12:44:05PM]	 Finalizado!
+    ```shell
+    [4/27/2024 12:43:31PM]	 Estado: Success  Tiempo: 113ms Dirección: 192.168.1.64
+    [4/27/2024 12:43:42PM]	 Estado: TimedOut  Tiempo: 3000ms. Dirección: 192.168.1.64
+    [4/27/2024 12:44:00PM]	 Estado: Success  Tiempo: 239ms. Dirección: 192.168.1.64
+    [4/27/2024 12:44:05PM]	 Finalizado!
 	Estadisticas: 
 	Aciertos: 13
 	Fallos:   5
