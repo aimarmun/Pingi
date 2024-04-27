@@ -32,4 +32,5 @@ Puede escribir los resultados en un archivo de texto
     ```
 
 ## Como compilar
-Simplemente baja el proyecto, ábrelo en Visual Studio y presiona F5 o publicalo.
+- Desde Visual Studio: Clona el repositorio, ábrelo en Visual Studio y presiona F5 o publicalo.
+- Desde Visual Stuido Code: Clona el repositorio, ve a la carpeta ```Pingi```dentro de la carpeta del proyecto y ejecuta ```dotnet run``` o ```dotnet publish```para publicar el proyecto.
