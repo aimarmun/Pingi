@@ -1,11 +1,10 @@
 ﻿using CommandLine;
 using System;
-using System.Data;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Text;
 
 namespace Pingi
 {
@@ -39,7 +38,9 @@ namespace Pingi
                 });
 
             if (result.Errors.Count() > 0) return;
-
+            
+            PrintWelcomeMsg();
+            
             while (running)
             {
                 try
@@ -91,6 +92,23 @@ namespace Pingi
             Console.Beep();
             System.Threading.Thread.Sleep(3000);
 
+        }
+
+        private static void PrintWelcomeMsg()
+        {
+            var tabs = "\t\t\t";
+            var builder = new StringBuilder();
+            builder.AppendLine($"[{DateTime.Now}]\t Inicio de Pingi");
+            builder.AppendLine($"{tabs} Host: {Host}");
+            builder.AppendLine($"{tabs} Protocolo: {(Port > 0 ? "puerto TCP" : "ping")}");
+            
+            if (Port > 0)
+                builder.AppendLine($"{tabs} Puerto TCP: {Port}");
+
+            if (NoDelay)
+                builder.AppendLine($"{tabs} Argumento --nodelay ACTIVADO");
+            
+            PrintLineMsg(builder.ToString());
         }
 
         private static void PrintLineMsg(string msg, bool writeToFile = true)
